@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Состав УК и КоАП: Экспресс-подготовка</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #e2e8f0;
+            --primary: #10b981;
+            --secondary: #ef4444;
+            --accent: #f59e0b;
+            --border: #334155;
+            --uk-color: #ef4444;
+            --koap-color: #3b82f6;
+            --block-bg: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* --- МЕНЮ --- */
+        .menu-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background-color: var(--border);
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            display: none;
+        }
+        .menu-btn.active { display: flex; }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000; opacity: 0; visibility: hidden;
+            transition: opacity 0.3s;
+        }
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        .sidebar {
+            position: fixed; top: 0; right: -350px;
+            width: 320px; max-width: 85vw; height: 100vh;
+            background-color: var(--card-bg); z-index: 1001;
+            transition: right 0.3s ease-in-out;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; overflow-y: auto;
+        }
+        .sidebar.active { right: 0; }
+        .sidebar-header {
+            padding: 15px; background: var(--bg); border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0;
+        }
+        .sidebar ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar li a {
+            color: #cbd5e1; text-decoration: none; display: block;
+            padding: 12px 15px; font-size: 14px; border-bottom: 1px solid var(--border);
+        }
+        .sidebar li a:hover { background-color: var(--border); }
+
+        /* --- СТАРТОВЫЙ ЭКРАН --- */
+        #start-screen {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; height: 100%; padding: 20px; text-align: center;
+        }
+        #start-screen h1 { font-size: 1.8rem; color: var(--accent); margin-bottom: 10px; }
+        #start-screen p { font-size: 1rem; color: #94a3b8; margin-bottom: 30px; }
+        .btn-start {
+            background-color: var(--accent); color: #000;
+            border: none; padding: 15px 40px; font-size: 1.1rem;
+            font-weight: bold; border-radius: 8px; cursor: pointer;
+            width: 100%; max-width: 300px; margin-bottom: 15px;
+        }
+        .btn-cheat {
+            background-color: #475569; color: #fff;
+            border: none; padding: 15px 40px; font-size: 1.1rem;
+            font-weight: bold; border-radius: 8px; cursor: pointer;
+            width: 100%; max-width: 300px;
+        }
+
+        /* --- ИГРОВОЙ ЭКРАН --- */
+        #game-screen {
+            display: none; flex-direction: column;
+            width: 100%; max-width: 600px; height: 100%;
+            margin: 0 auto; padding: 15px; padding-top: 60px;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .top-bar {
+            display: flex; justify-content: space-between;
+            font-size: 1rem; font-weight: bold; color: var(--accent);
+            background: var(--card-bg); padding: 12px;
+            border-radius: 10px; border: 1px solid var(--border);
+            margin-bottom: 10px; flex-shrink: 0;
+        }
+        .progress-bar-container {
+            width: 100%; height: 8px; background-color: var(--border);
+            border-radius: 5px; overflow: hidden; margin-bottom: 15px; flex-shrink: 0;
+        }
+        .progress-bar { height: 100%; background-color: var(--primary); width: 0%; transition: width 0.3s; }
+
+        .card-area {
+            flex-grow: 1; display: flex; flex-direction: column;
+            min-height: 0; margin-bottom: 15px;
+        }
+
+        .card {
+            background-color: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 15px; width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden;
+        }
+
+        .card-content {
+            padding: 20px; display: flex; flex-direction: column;
+            overflow-y: auto; flex-grow: 1; text-align: center;
+            /* Центрируем контент, когда ответ скрыт, и прижимаем к верху, когда открыт */
+            justify-content: center; 
+        }
+        .card.is-revealed .card-content {
+            justify-content: flex-start; /* Прижимаем к верху при открытии */
+        }
+
+        .card-code {
+            font-size: 1rem; font-weight: bold; margin-bottom: 10px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .code-uk { color: var(--uk-color); }
+        .code-koap { color: var(--koap-color); }
+
+        .card h2 {
+            font-size: 2.5rem; color: #fff; margin: 0 0 15px 0; line-height: 1.2;
+        }
+        .card.is-revealed h2 { font-size: 1.5rem; color: #94a3b8; margin-bottom: 15px; }
+
+        /* СТРУКТУРА ОТВЕТА */
+        .answer-structure {
+            display: none;
+            text-align: left;
+            width: 100%;
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent);
+        }
+        .card.is-revealed .answer-structure { display: block; }
+        .card.is-revealed .hint-text { display: none; }
+
+        .struct-row {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+        .struct-row:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .struct-label {
+            flex: 0 0 110px;
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        .struct-value {
+            flex: 1;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .hint-text {
+            text-align: center; font-size: 0.9rem; color: #64748b;
+            font-style: italic; margin-top: auto; padding-top: 20px;
+        }
+
+        .controls {
+            display: flex; flex-direction: column; gap: 10px;
+            width: 100%; flex-shrink: 0;
+        }
+        .btn-reveal {
+            background-color: var(--accent); color: #000;
+            border: none; padding: 15px; font-size: 1.1rem;
+            border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%;
+        }
+        .rating-buttons { display: none; gap: 10px; width: 100%; }
+        .btn-rate {
+            flex: 1; padding: 15px; font-size: 1rem; border-radius: 10px;
+            cursor: pointer; font-weight: bold; border: none; color: white;
+        }
+        .btn-known { background-color: var(--primary); }
+        .btn-repeat { background-color: var(--secondary); }
+
+        /* --- ШПАРГАЛКА --- */
+        #cheat-screen {
+            display: none; flex-direction: column; width: 100%; max-width: 800px;
+            height: 100%; margin: 0 auto; padding: 15px; padding-top: 60px; overflow-y: auto;
+        }
+        .cheat-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+        }
+        .cheat-header h2 { color: var(--accent); margin: 0; }
+        .btn-back {
+            background: #475569; color: white; border: none;
+            padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold;
+        }
+        
+        .cheat-category {
+            font-size: 1.2rem; color: var(--accent); margin: 20px 0 10px 0;
+            border-bottom: 1px solid var(--border); padding-bottom: 5px;
+        }
+        .cheat-item {
+            background-color: var(--card-bg); padding: 12px; border-radius: 8px;
+            margin-bottom: 8px; border-left: 4px solid var(--border);
+        }
+        .cheat-item.uk { border-left-color: var(--uk-color); }
+        .cheat-item.koap { border-left-color: var(--koap-color); }
+        .cheat-art-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 8px; }
+        .cheat-desc-row { font-size: 0.9rem; color: #cbd5e1; margin-bottom: 4px; }
+        .cheat-desc-row span { color: var(--accent); font-weight: bold; }
+
+        /* --- ЭКРАН ПОБЕДЫ --- */
+        #victory-screen {
+            display: none; flex-direction: column; align-items: center;
+            justify-content: center; width: 100%; height: 100%; padding: 20px; text-align: center;
+        }
+        #victory-screen h1 { font-size: 2rem; color: var(--primary); margin-bottom: 10px; }
+        .score-display { font-size: 1.8rem; color: var(--accent); font-weight: bold; margin-bottom: 30px; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <button class="menu-btn" id="menuBtn" onclick="toggleMenu()">☰</button>
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Все статьи</h2>
+            <button onclick="toggleMenu()" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;">✕</button>
+        </div>
+        <ul id="sidebar-list"></ul>
+    </nav>
+
+    <div id="start-screen">
+        <h1>Состав УК и КоАП</h1>
+        <p>Полный разбор по элементам для быстрой зубрежки</p>
+        <button class="btn-start" onclick="startGame()">🚀 Начать зубрежку</button>
+        <button class="btn-cheat" onclick="startCheatSheet()">📖 Шпаргалка (Список)</button>
+    </div>
+
+    <div id="game-screen">
+        <div>
+            <div class="top-bar">
+                <span id="score-display">Очки: 0</span>
+                <span id="progress-display">Осталось: 0</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="card-area">
+            <div class="card" id="flashcard">
+                <div class="card-content">
+                    <div class="card-code" id="card-code"></div>
+                    <h2 id="question-text">Загрузка...</h2>
+                    
+                    <!-- СТРУКТУРА ОТВЕТА -->
+                    <div class="answer-structure" id="answer-structure">
+                        <div class="struct-row">
+                            <div class="struct-label">Объект</div>
+                            <div class="struct-value" id="ans-object"></div>
+                        </div>
+                        <div class="struct-row">
+                            <div class="struct-label">Объективная часть</div>
+                            <div class="struct-value" id="ans-obj-side"></div>
+                        </div>
+                        <div class="struct-row">
+                            <div class="struct-label">Субъект</div>
+                            <div class="struct-value" id="ans-subject"></div>
+                        </div>
+                        <div class="struct-row">
+                            <div class="struct-label">Субъективная сторона</div>
+                            <div class="struct-value" id="ans-subj-side"></div>
+                        </div>
+                        <div class="struct-row">
+                            <div class="struct-label">Мотив</div>
+                            <div class="struct-value" id="ans-motive"></div>
+                        </div>
+                        <div class="struct-row">
+                            <div class="struct-label">Цель</div>
+                            <div class="struct-value" id="ans-goal"></div>
+                        </div>
+                        <div class="struct-row">
+                            <div class="struct-label">Предмет</div>
+                            <div class="struct-value" id="ans-item"></div>
+                        </div>
+                    </div>
+
+                    <div class="hint-text" id="hint-text">Нажми «Показать ответ» ниже</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-reveal" id="btn-reveal" onclick="revealAnswer()">ПОКАЗАТЬ СОСТАВ</button>
+            <div class="rating-buttons" id="rating-buttons">
+                <button class="btn-rate btn-known" onclick="rateCard(true)">✔ Знаю</button>
+                <button class="btn-rate btn-repeat" onclick="rateCard(false)">✖ Повторить</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cheat-screen">
+        <div class="cheat-header">
+            <h2>Шпаргалка (Составы)</h2>
+            <button class="btn-back" onclick="goHome()">На главную</button>
+        </div>
+        <div id="cheat-content"></div>
+    </div>
+
+    <div id="victory-screen">
+        <h1>ВСЁ ВЫУЧЕНО!</h1>
+        <p>Ты разобрал все составы!</p>
+        <div class="score-display" id="final-score">Твой результат: 0 очков</div>
+        <button class="btn-start" onclick="location.reload()">Начать заново</button>
+    </div>
+
+    <script>
+        // БАЗА ДАННЫХ С ПОЛНЫМ РАЗБОРОМ
+        const data = [
+            // === АДМИНИСТРАТИВКА (КоАП) ===
+            { code: "КоАП", art: "7.17", object: "Собственность", objSide: "Уничтожение или повреждение чужого имущества", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме умысла", motive: "Хулиганский / Личная неприязнь", goal: "—", item: "Чужое имущество" },
+            { code: "КоАП", art: "7.27", object: "Собственность", objSide: "Мелкое хищение (до 1000 руб.) путем кражи, мошенничества, присвоения или растраты", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме умысла", motive: "Корыстный", goal: "Обращение в свою пользу", item: "Чужое имущество" },
+            { code: "КоАП", art: "19.1", object: "Порядок управления", objSide: "Самоуправство (самовольное осуществление своего права, не причинившее существенного вреда)", subject: "Вменяемое физ. лицо, достигшее 16 лет (или должностное лицо)", subjSide: "Вина в форме умысла", motive: "—", goal: "Реализация предполагаемого права", item: "—" },
+            { code: "КоАП", art: "19.3", object: "Порядок управления", objSide: "Неповиновение законному распоряжению сотрудника полиции/Росгвардии", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме умысла", motive: "—", goal: "Воспрепятствование деятельности", item: "—" },
+            { code: "КоАП", art: "19.15", object: "Порядок управления", objSide: "Проживание без документа (паспорта) или по недействительному документу", subject: "Вменяемое физ. лицо, достигшее 16 лет (или должностное лицо)", subjSide: "Вина в форме умысла", motive: "—", goal: "—", item: "—" },
+            { code: "КоАП", art: "19.16", object: "Порядок управления", objSide: "Умышленная порча паспорта или утрата по небрежности", subject: "Вменяемое физ. лицо, достигшее 16 лет (или должностное лицо)", subjSide: "Умысел или неосторожность", motive: "—", goal: "—", item: "Паспорт" },
+            { code: "КоАП", art: "19.17", object: "Порядок управления", objSide: "Незаконное изъятие паспорта или принятие в залог", subject: "Вменяемое физ. лицо, достигшее 16 лет (или должностное лицо)", subjSide: "Вина в форме умысла", motive: "—", goal: "Обеспечение обязательств", item: "Паспорт" },
+            { code: "КоАП", art: "20.1", object: "Общественный порядок", objSide: "Мелкое хулиганство (нецензурная брань, оскорбительное приставание)", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме умысла", motive: "Хулиганский", goal: "—", item: "—" },
+            { code: "КоАП", art: "20.2", object: "Общественный порядок", objSide: "Нарушение порядка организации или проведения митинга/собрания", subject: "Вменяемое физ. лицо, достигшее 16 лет (организатор/участник)", subjSide: "Умысел или неосторожность", motive: "—", goal: "—", item: "—" },
+            { code: "КоАП", art: "20.3", object: "Общественный порядок", objSide: "Пропаганда или публичное демонстрирование нацистской/экстремистской символики", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме умысла", motive: "Идеологический / Экстремистский", goal: "Пропаганда", item: "Атрибутика/символика" },
+            { code: "КоАП", art: "20.5", object: "Общественный порядок", objSide: "Нарушение требований режима чрезвычайного положения", subject: "Вменяемое физ. лицо, достигшее 16 лет (или должностное лицо)", subjSide: "Умысел или неосторожность", motive: "—", goal: "—", item: "—" },
+            { code: "КоАП", art: "20.13", object: "Общественный порядок", objSide: "Стрельба из оружия в неотведенных местах или с нарушением правил", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Умысел или неосторожность", motive: "—", goal: "—", item: "Оружие" },
+            { code: "КоАП", art: "20.17", object: "Общественный порядок", objSide: "Самовольное проникновение на охраняемый объект", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме умысла", motive: "—", goal: "Проникновение", item: "Охраняемый объект" },
+            { code: "КоАП", art: "20.20", object: "Общественный порядок", objSide: "Распитие алкоголя или потребление наркотиков в запрещенных местах", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме умысла", motive: "—", goal: "—", item: "Алкоголь/Наркотики" },
+            { code: "КоАП", art: "20.21", object: "Общественный порядок", objSide: "Появление в общественных местах в состоянии опьянения", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме умысла", motive: "—", goal: "—", item: "—" },
+            { code: "КоАП", art: "20.22", object: "Общественный порядок", objSide: "Нахождение несовершеннолетних (до 16 лет) в состоянии опьянения", subject: "Родители или законные представители (достигшие 16 лет)", subjSide: "Умысел или неосторожность", motive: "—", goal: "—", item: "—" },
+
+            // === УГОЛОВКА (УК) ===
+            { code: "УК", art: "158", object: "Собственность", objSide: "Кража (тайное хищение чужого имущества)", subject: "Вменяемое физ. лицо, достигшее 14 лет", subjSide: "Вина в форме прямого умысла", motive: "Корыстный", goal: "Обращение в свою пользу", item: "Чужое имущество" },
+            { code: "УК", art: "159", object: "Собственность", objSide: "Мошенничество (хищение путем обмана или злоупотребления доверием)", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме прямого умысла", motive: "Корыстный", goal: "Обращение в свою пользу", item: "Имущество или право на имущество" },
+            { code: "УК", art: "160", object: "Собственность", objSide: "Присвоение или растрата (хищение вверенного имущества)", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме прямого умысла", motive: "Корыстный", goal: "Обращение в свою пользу", item: "Вверенное имущество" },
+            { code: "УК", art: "161", object: "Собственность", objSide: "Грабеж (открытое хищение чужого имущества)", subject: "Вменяемое физ. лицо, достигшее 14 лет", subjSide: "Вина в форме прямого умысла", motive: "Корыстный", goal: "Обращение в свою пользу", item: "Чужое имущество" },
+            { code: "УК", art: "162", object: "Собственность + Здоровье личности", objSide: "Разбой (нападение с применением опасного для жизни/здоровья насилия)", subject: "Вменяемое физ. лицо, достигшее 14 лет", subjSide: "Вина в форме прямого умысла", motive: "Корыстный", goal: "Завладение имуществом", item: "Чужое имущество" },
+            { code: "УК", art: "163", object: "Собственность + Честь и достоинство", objSide: "Вымогательство (требование передачи имущества под угрозой)", subject: "Вменяемое физ. лицо, достигшее 14 лет", subjSide: "Вина в форме прямого умысла", motive: "Корыстный", goal: "Получение имущества/прав", item: "Имущество или право на него" },
+            { code: "УК", art: "166", object: "Собственность", objSide: "Угон (неправомерное завладение автомобилем или иным ТС без цели хищения)", subject: "Вменяемое физ. лицо, достигшее 14 лет", subjSide: "Вина в форме прямого умысла", motive: "—", goal: "Временное использование ТС (БЕЗ цели хищения!)", item: "Транспортное средство" },
+            { code: "УК", art: "205", object: "Общественная безопасность", objSide: "Террористический акт (взрыв, поджог, устрашающие население)", subject: "Вменяемое физ. лицо, достигшее 14 лет", subjSide: "Вина в форме прямого умысла", motive: "—", goal: "Устрашение населения / Воздействие на власть", item: "—" },
+            { code: "УК", art: "206", object: "Общественная безопасность + Личность", objSide: "Захват или удержание лица в качестве заложника", subject: "Вменяемое физ. лицо, достигшее 14 лет", subjSide: "Вина в форме прямого умысла", motive: "—", goal: "Понуждение государства/организации к действиям", item: "Человек (заложник)" },
+            { code: "УК", art: "212", object: "Общественная безопасность", objSide: "Организация массовых беспорядков (погромы, поджоги, насилие)", subject: "Вменяемое физ. лицо, достигшее 16 лет (по ч.2 - с 14 лет)", subjSide: "Вина в форме прямого умысла", motive: "—", goal: "—", item: "—" },
+            { code: "УК", art: "213", object: "Общественная безопасность", objSide: "Хулиганство (грубое нарушение общ. порядка с насилием или оружием)", subject: "Вменяемое физ. лицо, достигшее 16 лет (по ч.2,3 - с 14 лет)", subjSide: "Вина в форме прямого умысла", motive: "Хулиганский / Ненависть", goal: "—", item: "Оружие/Предметы" },
+            { code: "УК", art: "214", object: "Общественный порядок", objSide: "Вандализм (осквернение зданий, порча имущества в общ. местах)", subject: "Вменяемое физ. лицо, достигшее 14 лет", subjSide: "Вина в форме прямого умысла", motive: "Хулиганский", goal: "—", item: "Здания / Имущество" },
+            { code: "УК", art: "222", object: "Общественная безопасность", objSide: "Незаконные приобретение, передача, хранение, сбыт, ношение оружия", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме прямого умысла", motive: "—", goal: "—", item: "Огнестрельное оружие / Боеприпасы" },
+            { code: "УК", art: "224", object: "Общественная безопасность", objSide: "Небрежное хранение огнестрельного оружия, повлекшее тяжкие последствия", subject: "Вменяемое физ. лицо (владелец), достигшее 16 лет", subjSide: "Вина в форме неосторожности", motive: "—", goal: "—", item: "Огнестрельное оружие" },
+            { code: "УК", art: "285", object: "Государственная власть", objSide: "Злоупотребление должностными полномочиями", subject: "Должностное лицо (достигшее 16 лет)", subjSide: "Умысел (прямой или косвенный)", motive: "Корыстная или иная личная заинтересованность", goal: "—", item: "—" },
+            { code: "УК", art: "286", object: "Государственная власть", objSide: "Превышение должностных полномочий (действия, явно выходящие за рамки)", subject: "Должностное лицо (достигшее 16 лет)", subjSide: "Умысел (прямой или косвенный)", motive: "Корыстная или иная личная заинтересованность", goal: "—", item: "—" },
+            { code: "УК", art: "290", object: "Государственная власть", objSide: "Получение взятки должностным лицом", subject: "Должностное лицо (достигшее 16 лет)", subjSide: "Вина в форме прямого умысла", motive: "Корыстный", goal: "Получение выгоды", item: "Деньги, ценные бумаги, имущество, услуги" },
+            { code: "УК", art: "291", object: "Государственная власть", objSide: "Дача взятки должностному лицу", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме прямого умысла", motive: "Корыстный / Личная выгода", goal: "Достижение желаемого результата", item: "Деньги, ценные бумаги, имущество, услуги" },
+            { code: "УК", art: "292", object: "Государственная власть", objSide: "Служебный подлог (внесение ложных сведений в официальные документы)", subject: "Должностное лицо / Гос. служащий (достигшее 16 лет)", subjSide: "Вина в форме прямого умысла", motive: "Корыстная или иная личная заинтересованность", goal: "—", item: "Официальный документ" },
+            { code: "УК", art: "293", object: "Государственная власть", objSide: "Халатность (неисполнение обязанностей, повлекшее крупный ущерб)", subject: "Должностное лицо (достигшее 16 лет)", subjSide: "Вина в форме неосторожности (легкомыслие/небрежность)", motive: "—", goal: "—", item: "—" },
+            { code: "УК", art: "317", object: "Порядок управления", objSide: "Посягательство на жизнь сотрудника правоохранительного органа", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме прямого умысла", motive: "Месть / Воспрепятствование", goal: "Прекращение деятельности / Месть", item: "Жизнь сотрудника" },
+            { code: "УК", art: "318", object: "Порядок управления + Здоровье", objSide: "Применение насилия (опасного или неопасного) в отношении представителя власти", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме прямого умысла", motive: "Месть / Воспрепятствование", goal: "Воспрепятствование деятельности", item: "Здоровье представителя власти" },
+            { code: "УК", art: "319", object: "Порядок управления + Честь и достоинство", objSide: "Публичное оскорбление представителя власти", subject: "Вменяемое физ. лицо, достигшее 16 лет", subjSide: "Вина в форме прямого умысла", motive: "Месть / Неприязнь", goal: "Унижение чести и достоинства", item: "Честь и достоинство" },
+
+            // БОНУС
+            { code: "УК", art: "37, 38, 39", object: "Обстоятельства, исключающие преступность", objSide: "37 - Необходимая оборона; 38 - Задержание преступника; 39 - Крайняя необходимость", subject: "Любое лицо", subjSide: "—", motive: "Защита / Предотвращение вреда", goal: "—", item: "—" }
+        ];
+
+        let deck = [];
+        let score = 0;
+        let totalQuestions = data.length;
+        let learnedCount = 0;
+
+        const menuBtn = document.getElementById('menuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const cheatScreen = document.getElementById('cheat-screen');
+        const victoryScreen = document.getElementById('victory-screen');
+
+        function init() {
+            buildSidebar();
+            buildCheatSheet();
+        }
+
+        function toggleMenu() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        function buildSidebar() {
+            const list = document.getElementById('sidebar-list');
+            list.innerHTML = '';
+            data.forEach((item, index) => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = '#';
+                a.innerText = `${item.code} ${item.art} (${item.objSide.substring(0, 20)}...)`;
+                a.onclick = (e) => {
+                    e.preventDefault();
+                    toggleMenu();
+                    jumpToQuestion(index);
+                };
+                li.appendChild(a);
+                list.appendChild(li);
+            });
+        }
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            deck = [...data];
+            shuffle(deck);
+            score = 0;
+            learnedCount = 0;
+            
+            startScreen.style.display = 'none';
+            cheatScreen.style.display = 'none';
+            victoryScreen.style.display = 'none';
+            gameScreen.style.display = 'flex';
+            menuBtn.classList.add('active');
+            
+            updateProgressBar();
+            nextCard();
+        }
+
+        function updateProgressBar() {
+            const percent = (learnedCount / totalQuestions) * 100;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            document.getElementById('progress-display').innerText = `Осталось: ${deck.length}`;
+        }
+
+        function nextCard() {
+            if (deck.length === 0) {
+                endGame();
+                return;
+            }
+            renderCard(deck[0], false);
+        }
+
+        function renderCard(cardData, isRevealed) {
+            const cardEl = document.getElementById('flashcard');
+            cardEl.classList.remove('is-revealed');
+            
+            const codeEl = document.getElementById('card-code');
+            codeEl.innerText = cardData.code;
+            codeEl.className = `card-code ${cardData.code === 'УК' ? 'code-uk' : 'code-koap'}`;
+            
+            document.getElementById('question-text').innerText = `Статья ${cardData.art}`;
+            
+            // Заполнение структуры
+            document.getElementById('ans-object').innerText = cardData.object;
+            document.getElementById('ans-obj-side').innerText = cardData.objSide;
+            document.getElementById('ans-subject').innerText = cardData.subject;
+            document.getElementById('ans-subj-side').innerText = cardData.subjSide;
+            document.getElementById('ans-motive').innerText = cardData.motive;
+            document.getElementById('ans-goal').innerText = cardData.goal;
+            document.getElementById('ans-item').innerText = cardData.item;
+
+            document.getElementById('btn-reveal').style.display = 'block';
+            document.getElementById('rating-buttons').style.display = 'none';
+
+            if (isRevealed) revealAnswer();
+        }
+
+        function jumpToQuestion(originalIndex) {
+            if (gameScreen.style.display !== 'flex') startGame();
+            
+            const targetQuestion = data[originalIndex];
+            const indexInDeck = deck.findIndex(item => item.art === targetQuestion.art && item.code === targetQuestion.code);
+            
+            if (indexInDeck > -1) {
+                const [card] = deck.splice(indexInDeck, 1);
+                deck.unshift(card);
+            } else {
+                deck.unshift(targetQuestion);
+            }
+            
+            renderCard(deck[0], true); 
+            
+            document.getElementById('rating-buttons').innerHTML = `
+                <button class="btn-rate btn-known" onclick="nextCard()" style="flex:1;">Следующая статья ➔</button>
+            `;
+        }
+
+        function revealAnswer() {
+            document.getElementById('flashcard').classList.add('is-revealed');
+            document.getElementById('btn-reveal').style.display = 'none';
+            
+            const ratingDiv = document.getElementById('rating-buttons');
+            ratingDiv.innerHTML = `
+                <button class="btn-rate btn-known" onclick="rateCard(true)">✔ Знаю</button>
+                <button class="btn-rate btn-repeat" onclick="rateCard(false)">✖ Повторить</button>
+            `;
+            ratingDiv.style.display = 'flex';
+        }
+
+        function rateCard(isKnown) {
+            if (isKnown) {
+                score += 10;
+                learnedCount++;
+                deck.shift();
+                document.getElementById('score-display').innerText = `Очки: ${score}`;
+                updateProgressBar();
+                nextCard();
+            } else {
+                const failedCard = deck.shift();
+                deck.push(failedCard);
+                nextCard();
+            }
+        }
+
+        function endGame() {
+            gameScreen.style.display = 'none';
+            menuBtn.classList.remove('active');
+            victoryScreen.style.display = 'flex';
+            document.getElementById('final-score').innerText = `Твой результат: ${score} очков!`;
+        }
+
+        // --- ШПАРГАЛКА ---
+        function startCheatSheet() {
+            startScreen.style.display = 'none';
+            gameScreen.style.display = 'none';
+            menuBtn.classList.remove('active');
+            cheatScreen.style.display = 'flex';
+        }
+
+        function buildCheatSheet() {
+            const container = document.getElementById('cheat-content');
+            container.innerHTML = '';
+            
+            const koapList = data.filter(item => item.code === 'КоАП');
+            const ukList = data.filter(item => item.code === 'УК');
+
+            const createCategoryBlock = (title, items, type) => {
+                const h3 = document.createElement('div');
+                h3.className = 'cheat-category';
+                h3.innerText = title;
+                container.appendChild(h3);
+
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = `cheat-item ${type}`;
+                    div.innerHTML = `
+                        <div class="cheat-art-title">${item.code} ${item.art}</div>
+                        <div class="cheat-desc-row"><span>Объект:</span> ${item.object}</div>
+                        <div class="cheat-desc-row"><span>Объективная часть:</span> ${item.objSide}</div>
+                        <div class="cheat-desc-row"><span>Субъект:</span> ${item.subject}</div>
+                        <div class="cheat-desc-row"><span>Субъективная сторона:</span> ${item.subjSide}</div>
+                        <div class="cheat-desc-row"><span>Мотив:</span> ${item.motive} | <span>Цель:</span> ${item.goal}</div>
+                        <div class="cheat-desc-row"><span>Предмет:</span> ${item.item}</div>
+                    `;
+                    container.appendChild(div);
+                });
+            };
+
+            createCategoryBlock("КоАП РФ (Административка)", koapList, "koap");
+            createCategoryBlock("УК РФ (Уголовка)", ukList, "uk");
+        }
+
+        function goHome() {
+            cheatScreen.style.display = 'none';
+            gameScreen.style.display = 'none';
+            victoryScreen.style.display = 'none';
+            menuBtn.classList.remove('active');
+            startScreen.style.display = 'flex';
+        }
+
+        init();
+    </script>
+</body>
+</html>
